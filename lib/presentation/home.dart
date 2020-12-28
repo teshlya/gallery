@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:gallery_app/domain/state/home/home_state.dart';
+import 'package:gallery_app/internal/dependencies/home_module.dart';
+import 'package:gallery_app/domain/model/image.dart' as MyImage;
 
 class Home extends StatefulWidget {
   @override
@@ -6,9 +10,13 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  HomeState _homeState;
+
   @override
   void initState() {
     super.initState();
+    _homeState = HomeModule.homeState();
+    _homeState.getImageList();
   }
 
   @override
@@ -32,20 +40,11 @@ class _HomeState extends State<Home> {
           ],
         ),
       ),
-      child: _getListImages(),
+      child: _getImageList(),
     );
   }
 
-  Widget _getListImages() {
-    return Column(
-      children: [
-        SizedBox(height: 25),
-        _getCard(),
-      ],
-    );
-  }
-
-  Widget _getCard() {
+  Widget _getCard(MyImage.Image image) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
       child: SizedBox(
@@ -55,18 +54,18 @@ class _HomeState extends State<Home> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15.0),
           ),
-          child: _getContainCard(),
+          child: _getContainCard(image),
         ),
       ),
     );
   }
 
-  Widget _getContainCard() {
+  Widget _getContainCard(MyImage.Image image) {
     return Row(
       children: [
         Expanded(
           flex: 1,
-          child: _getImage(),
+          child: _getImage(image.smallImage),
         ),
         Expanded(
           flex: 1,
@@ -76,8 +75,8 @@ class _HomeState extends State<Home> {
               SizedBox(
                 height: 10.0,
               ),
-              _getAuthor(),
-              _getTitle(),
+              _getAuthor(image.author),
+              _getTitle(image.title)
             ],
           ),
         )
@@ -85,19 +84,56 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _getImage() {
+  Widget _getImage(String url) {
     return Padding(
       padding: EdgeInsets.all(10.0),
-      child: Image.network(
-          "https://images.unsplash.com/photo-1593642532009-6ba71e22f468?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MXwzMjQ1NnwxfDF8YWxsfDF8fHx8fHwyfA&ixlib=rb-1.2.1&q=80&w=400"),
-    );
+      child: Image.network(url));
   }
 
-  Widget _getAuthor() {
-    return Text("XPS");
+  Widget _getAuthor(String author) {
+    return Text(author != null ? author : "");
   }
 
-  Widget _getTitle() {
-    return Text("silver laptop on brown wooden table");
+  Widget _getTitle(String title) {
+    return Text(title != null ? title : "");
+  }
+
+  Widget _getImageList() {
+    return Observer(builder: (_) {
+      if (_homeState.imageList == null || _homeState.imageList.images.isEmpty) {
+        if (_homeState.isLoading) {
+          return Center(
+              child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: CircularProgressIndicator(),
+          ));
+        } else
+          return Container();
+      } else
+        return ListView.builder(
+            scrollDirection: Axis.vertical,
+            shrinkWrap: true,
+            itemCount: _homeState.imageList.images.length,
+            itemBuilder: (context, index) {
+              return _getCard(_homeState.imageList.images[index]);
+            });
+    }
+
+        /*if (_homeState.isLoading)
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        if (_homeState.imageList.images == null) return Container(color: Colors.red,);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('${_homeState.imageList.images[0].title}'),
+            Text('${_homeState.imageList.images[1].title}'),
+            Text('${_homeState.imageList.images[2].title}'),
+            Text('${_homeState.imageList.images[3].title}'),
+
+          ],
+        );*/
+        );
   }
 }

@@ -42,8 +42,8 @@ mixin _$HomeState on HomeStateBase, Store {
   final _$getImageListAsyncAction = AsyncAction('HomeStateBase.getImageList');
 
   @override
-  Future<void> getImageList({@required int page}) {
-    return _$getImageListAsyncAction.run(() => super.getImageList(page: page));
+  Future<void> getImageList() {
+    return _$getImageListAsyncAction.run(() => super.getImageList());
   }
 
   @override

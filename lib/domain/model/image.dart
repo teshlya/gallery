@@ -12,5 +12,5 @@ class Image {
       : smallImage = json['urls']['small'],
         fullImage = json['urls']['full'],
         author = json['user']['name'],
-        title = json['description'];
+        title = json['description']!=null ? json['description'] : json['alt_description'] ;
 }
