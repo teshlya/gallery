@@ -73,9 +73,11 @@ class _HomeState extends State<Home> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 10.0,),
+              SizedBox(
+                height: 10.0,
+              ),
               _getAuthor(),
-              _getDescription(),
+              _getTitle(),
             ],
           ),
         )
@@ -95,7 +97,7 @@ class _HomeState extends State<Home> {
     return Text("XPS");
   }
 
-  Widget _getDescription() {
+  Widget _getTitle() {
     return Text("silver laptop on brown wooden table");
   }
 }

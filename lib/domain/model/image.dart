@@ -1,15 +1,16 @@
-import 'package:meta/meta.dart';
+import 'dart:convert';
 
-class Day {
-  final String smallImage;
-  final String fullImage;
-  final String author;
-  final String   title;
+class Image {
+  String smallImage;
+  String fullImage;
+  String author;
+  final String title;
 
-  Day({
-    @required this.smallImage,
-    @required this.fullImage,
-    @required this.author,
-    @required this.title,
-  });
+  Image({this.smallImage, this.fullImage, this.author, this.title});
+
+  Image.fromJson(Map<String, dynamic> json)
+      : smallImage = json['urls']['small'],
+        fullImage = json['urls']['full'],
+        author = json['user']['name'],
+        title = json['description'];
 }
