@@ -10,10 +10,16 @@ class ImageListService {
   );
 
   Future<ApiImageList> getImageList(GetImageListBody body) async {
-    final response = await _dio.get(
-      '/photos',
-      queryParameters: body.toApi(),
-    );
+    var response;
+    try {
+      response = await _dio.get(
+        '/photos',
+        queryParameters: body.toApi(),
+      );
+    } catch (error, stacktrace) {
+      print("Exception occured: $error stackTrace: $stacktrace");
+      return null;
+    }
     return ApiImageList.fromApi(response.data);
   }
 }

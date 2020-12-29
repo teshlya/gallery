@@ -4,6 +4,8 @@ import 'package:gallery_app/domain/state/home/home_state.dart';
 import 'package:gallery_app/internal/dependencies/home_module.dart';
 import 'package:gallery_app/domain/model/image.dart' as MyImage;
 
+import 'image_screen.dart';
+
 class Home extends StatefulWidget {
   @override
   _HomeState createState() => _HomeState();
@@ -11,12 +13,29 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   HomeState _homeState;
+  ScrollController _scrollController = new ScrollController();
 
   @override
   void initState() {
     super.initState();
+    initHomeState();
+    initScrollController();
+  }
+
+  void initHomeState() {
     _homeState = HomeModule.homeState();
     _homeState.getImageList();
+  }
+
+  void initScrollController() {
+    _scrollController.addListener(() {
+      var triggerFetchMoreSize =
+          0.9 * _scrollController.position.maxScrollExtent;
+
+      if (_scrollController.position.pixels > triggerFetchMoreSize) {
+        _homeState.getImageList();
+      }
+    });
   }
 
   @override
@@ -40,24 +59,85 @@ class _HomeState extends State<Home> {
           ],
         ),
       ),
-      child: _getImageList(),
+      child: _getList(),
+    );
+  }
+
+  Widget _getList() {
+    return Observer(builder: (_) {
+      if (_homeState.imageList == null || _homeState.imageList.images.isEmpty) {
+        if (_homeState.errorLoading)
+          return Center(
+              child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Text("Error get data from server"),
+          ));
+        if (_homeState.isLoading) {
+          return Center(
+              child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: CircularProgressIndicator(),
+          ));
+        } else
+          return Container();
+      } else
+        return _fillList();
+    });
+  }
+
+  Widget _fillList() {
+    return ListView(
+      controller: _scrollController,
+      scrollDirection: Axis.vertical,
+      shrinkWrap: true,
+      children: [
+        for (var item in _homeState.imageList.images) _getItem(item),
+        _homeState.isLoading
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  CircularProgressIndicator(),
+                ],
+              )
+            : Container(),
+      ],
+    );
+  }
+
+  Widget _getItem(MyImage.Image image) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+      child: SizedBox(
+          height: 130,
+          child: Stack(children: <Widget>[
+            _getCard(image),
+            _onTapCard(image.fullImage),
+          ])),
     );
   }
 
   Widget _getCard(MyImage.Image image) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
-      child: SizedBox(
-        height: 130,
-        child: Card(
-          color: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          child: _getContainCard(image),
-        ),
+    return Card(
+      color: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
       ),
+      child: _getContainCard(image),
     );
+  }
+
+  Widget _onTapCard(String url) {
+    return Positioned.fill(
+        child: new Material(
+            color: Colors.transparent,
+            child: new InkWell(
+              onTap: () => _openImage(url),
+            )));
+  }
+
+  _openImage(String url) {
+    print("open");
+    Navigator.push(context, MaterialPageRoute(builder: (context) => ImageScreen(url: url,)));
   }
 
   Widget _getContainCard(MyImage.Image image) {
@@ -79,7 +159,7 @@ class _HomeState extends State<Home> {
               _getTitle(image.title)
             ],
           ),
-        )
+        ),
       ],
     );
   }
@@ -87,7 +167,8 @@ class _HomeState extends State<Home> {
   Widget _getImage(String url) {
     return Padding(
       padding: EdgeInsets.all(10.0),
-      child: Image.network(url));
+      child: Image.network(url),
+    );
   }
 
   Widget _getAuthor(String author) {
@@ -95,45 +176,8 @@ class _HomeState extends State<Home> {
   }
 
   Widget _getTitle(String title) {
-    return Text(title != null ? title : "");
-  }
-
-  Widget _getImageList() {
-    return Observer(builder: (_) {
-      if (_homeState.imageList == null || _homeState.imageList.images.isEmpty) {
-        if (_homeState.isLoading) {
-          return Center(
-              child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: CircularProgressIndicator(),
-          ));
-        } else
-          return Container();
-      } else
-        return ListView.builder(
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true,
-            itemCount: _homeState.imageList.images.length,
-            itemBuilder: (context, index) {
-              return _getCard(_homeState.imageList.images[index]);
-            });
-    }
-
-        /*if (_homeState.isLoading)
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        if (_homeState.imageList.images == null) return Container(color: Colors.red,);
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('${_homeState.imageList.images[0].title}'),
-            Text('${_homeState.imageList.images[1].title}'),
-            Text('${_homeState.imageList.images[2].title}'),
-            Text('${_homeState.imageList.images[3].title}'),
-
-          ],
-        );*/
-        );
+    return SingleChildScrollView(
+        scrollDirection: Axis.vertical, //.horizontal
+        child: Text(title != null ? title : ""));
   }
 }

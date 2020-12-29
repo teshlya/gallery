@@ -39,6 +39,21 @@ mixin _$HomeState on HomeStateBase, Store {
     });
   }
 
+  final _$errorLoadingAtom = Atom(name: 'HomeStateBase.errorLoading');
+
+  @override
+  bool get errorLoading {
+    _$errorLoadingAtom.reportRead();
+    return super.errorLoading;
+  }
+
+  @override
+  set errorLoading(bool value) {
+    _$errorLoadingAtom.reportWrite(value, super.errorLoading, () {
+      super.errorLoading = value;
+    });
+  }
+
   final _$getImageListAsyncAction = AsyncAction('HomeStateBase.getImageList');
 
   @override
@@ -50,7 +65,8 @@ mixin _$HomeState on HomeStateBase, Store {
   String toString() {
     return '''
 imageList: ${imageList},
-isLoading: ${isLoading}
+isLoading: ${isLoading},
+errorLoading: ${errorLoading}
     ''';
   }
 }
